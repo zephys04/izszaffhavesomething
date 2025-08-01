@@ -9,7 +9,7 @@
       padding: 0;
       overflow: hidden;
       height: 100%;
-      background: #222; /* dark flower-friendly background */
+      background: #222;
     }
     #message {
       position: absolute;
@@ -20,6 +20,7 @@
       font-size: 3em;
       color: #fff;
       text-shadow: 2px 2px 5px #f06;
+      z-index: 2;
     }
     #playButton {
       position: absolute;
@@ -33,6 +34,7 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
+      z-index: 2;
     }
     #flowerCanvas {
       position: absolute;
@@ -40,7 +42,8 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: -1;
+      z-index: 1;
+      display: block;
     }
   </style>
 </head>
@@ -51,39 +54,62 @@
   <canvas id="flowerCanvas"></canvas>
 
   <script>
-    // Flower drawing
     const canvas = document.getElementById('flowerCanvas');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
     const ctx = canvas.getContext('2d');
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
 
-    function drawFlower(centerX, centerY, petalCount, petalLength, petalColor, centerColor) {
+    // Draw animated flower
+    function drawFlower(cx, cy, petalCount, petalLength, petalColor, centerColor, t, size=1) {
+      ctx.save();
+      ctx.translate(cx, cy);
       for (let i = 0; i < petalCount; i++) {
         let angle = (2 * Math.PI / petalCount) * i;
-        let x = centerX + Math.cos(angle) * petalLength;
-        let y = centerY + Math.sin(angle) * petalLength;
-
+        let wave = Math.sin(t/600 + i + cx/100 + cy/100) * (petalLength/10) * size;
+        ctx.save();
+        ctx.rotate(angle);
         ctx.beginPath();
-        ctx.ellipse(x, y, petalLength/2, petalLength/4, angle, 0, 2 * Math.PI);
-        ctx.fillStyle = petalColor;
-        ctx.fill();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(
+          wave, -petalLength/2, 
+          wave, -petalLength, 
+          0, -petalLength
+        );
+        ctx.bezierCurveTo(
+          -wave, -petalLength, 
+          -wave, -petalLength/2, 
+          0, 0
+        );
         ctx.closePath();
+        ctx.fillStyle = petalColor;
+        ctx.globalAlpha = 0.85;
+        ctx.fill();
+        ctx.restore();
       }
-      // Draw center
+      // Draw flower center
       ctx.beginPath();
-      ctx.arc(centerX, centerY, petalLength/3, 0, 2 * Math.PI);
+      ctx.arc(0, 0, petalLength / 4 * size, 0, 2 * Math.PI);
       ctx.fillStyle = centerColor;
+      ctx.globalAlpha = 1;
       ctx.fill();
-      ctx.closePath();
+      ctx.restore();
     }
 
-    // Draw several flowers
-    drawFlower(canvas.width/2, canvas.height/2, 8, 120, '#ffb6c1', '#ffe066'); // center flower
-    drawFlower(canvas.width/3, canvas.height/3, 6, 60, '#ff69b4', '#ffe066');
-    drawFlower(canvas.width*2/3, canvas.height*2/3, 7, 80, '#ffecb3', '#ffd700');
-    drawFlower(canvas.width/2, canvas.height/4, 5, 50, '#c1ffc1', '#ffb347');
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      let t = performance.now();
+      // Draw multiple animated flowers
+      drawFlower(width/2, height/2, 8, 120, '#ffb6c1', '#ffe066', t, 1.2);
+      drawFlower(width/3, height/2, 6, 70, '#ff69b4', '#ffe066', t+1000, 0.8);
+      drawFlower(width*2/3, height/2, 7, 80, '#ffecb3', '#ffd700', t+2000, 1);
+      drawFlower(width/2, height/3, 5, 50, '#c1ffc1', '#ffb347', t+500, 0.7);
+      requestAnimationFrame(animate);
+    }
+    animate();
 
-    // Music button
+    // Play music button
     const playButton = document.getElementById('playButton');
     const loveSong = document.getElementById('loveSong');
     playButton.addEventListener('click', () => {
@@ -92,13 +118,10 @@
 
     // Responsive canvas
     window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawFlower(canvas.width/2, canvas.height/2, 8, 120, '#ffb6c1', '#ffe066');
-      drawFlower(canvas.width/3, canvas.height/3, 6, 60, '#ff69b4', '#ffe066');
-      drawFlower(canvas.width*2/3, canvas.height*2/3, 7, 80, '#ffecb3', '#ffd700');
-      drawFlower(canvas.width/2, canvas.height/4, 5, 50, '#c1ffc1', '#ffb347');
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
     });
   </script>
 </body>
