@@ -9,9 +9,8 @@
       padding: 0;
       overflow: hidden;
       height: 100%;
-      background: black;
+      background: #222; /* dark flower-friendly background */
     }
-
     #message {
       position: absolute;
       top: 40%;
@@ -22,7 +21,6 @@
       color: #fff;
       text-shadow: 2px 2px 5px #f06;
     }
-
     #playButton {
       position: absolute;
       top: 60%;
@@ -36,45 +34,71 @@
       border-radius: 10px;
       cursor: pointer;
     }
+    #flowerCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+    }
   </style>
 </head>
 <body>
-  <div id="message">Happy National Girlfriend Day, MANJAA !!! 💖🎇</div>
-  <button onclick="document.getElementById('song').play()">Play Our Song</button>
-<audio id="song" src="magnolia.mp3"></audio>
+  <div id="message">Happy National Girlfriend Day, MANJAA !!! 🌸🌼🌻</div>
+  <button id="playButton">Play Our Song</button>
+  <audio id="loveSong" src="magnolia.mp3"></audio>
+  <canvas id="flowerCanvas"></canvas>
 
-  <canvas id="fireworks"></canvas>
-
-
-  <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.10.4/dist/index.umd.js"></script>
   <script>
-    const container = document.body;
-    const fireworks = new Fireworks.default(container, {
-      rocketsPoint: 50,
-      hue: {
-        min: 0,
-        max: 360
-      },
-      delay: {
-        min: 15,
-        max: 30
-      },
-      speed: 2,
-      acceleration: 1.05,
-      friction: 0.95,
-      gravity: 1.5,
-      particles: 50,
-      trace: 3,
-      explosion: 5
-    });
+    // Flower drawing
+    const canvas = document.getElementById('flowerCanvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext('2d');
 
-    fireworks.start();
+    function drawFlower(centerX, centerY, petalCount, petalLength, petalColor, centerColor) {
+      for (let i = 0; i < petalCount; i++) {
+        let angle = (2 * Math.PI / petalCount) * i;
+        let x = centerX + Math.cos(angle) * petalLength;
+        let y = centerY + Math.sin(angle) * petalLength;
 
+        ctx.beginPath();
+        ctx.ellipse(x, y, petalLength/2, petalLength/4, angle, 0, 2 * Math.PI);
+        ctx.fillStyle = petalColor;
+        ctx.fill();
+        ctx.closePath();
+      }
+      // Draw center
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, petalLength/3, 0, 2 * Math.PI);
+      ctx.fillStyle = centerColor;
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    // Draw several flowers
+    drawFlower(canvas.width/2, canvas.height/2, 8, 120, '#ffb6c1', '#ffe066'); // center flower
+    drawFlower(canvas.width/3, canvas.height/3, 6, 60, '#ff69b4', '#ffe066');
+    drawFlower(canvas.width*2/3, canvas.height*2/3, 7, 80, '#ffecb3', '#ffd700');
+    drawFlower(canvas.width/2, canvas.height/4, 5, 50, '#c1ffc1', '#ffb347');
+
+    // Music button
     const playButton = document.getElementById('playButton');
     const loveSong = document.getElementById('loveSong');
-
     playButton.addEventListener('click', () => {
       loveSong.play();
+    });
+
+    // Responsive canvas
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawFlower(canvas.width/2, canvas.height/2, 8, 120, '#ffb6c1', '#ffe066');
+      drawFlower(canvas.width/3, canvas.height/3, 6, 60, '#ff69b4', '#ffe066');
+      drawFlower(canvas.width*2/3, canvas.height*2/3, 7, 80, '#ffecb3', '#ffd700');
+      drawFlower(canvas.width/2, canvas.height/4, 5, 50, '#c1ffc1', '#ffb347');
     });
   </script>
 </body>
